@@ -26,6 +26,8 @@ int pause(int);
 int uptime(void);
 int sync(void);
 int ugetpid(void);
+int vmprint(void);
+int pgaccess(void *base, int npages, uint64 *mask);
 
 // ulib.c
 int stat(const char *, struct stat *);
