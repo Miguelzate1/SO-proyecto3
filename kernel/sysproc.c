@@ -110,3 +110,48 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+
+uint64
+sys_pgaccess(void)
+{
+  uint64 base;
+  int npages;
+  uint64 maskaddr;
+  uint64 mask = 0;
+  struct proc *p = myproc();
+
+  // 1. Leer argumentos (en tu xv6 devuelven void)
+  argaddr(0, &base);
+  argint(1, &npages);
+  argaddr(2, &maskaddr);
+
+  // 2. Validar rango
+  if(npages < 0 || npages > 64)
+    return -1;
+
+  // 3. Revisar cada página solicitada
+  for(int i = 0; i < npages; i++){
+    uint64 va = base + (uint64)i * PGSIZE;
+    pte_t *pte = walk(p->pagetable, va, 0);
+
+    if(pte != 0 && (*pte & PTE_V) && (*pte & PTE_A)){
+      mask |= (1L << i);
+      *pte &= ~PTE_A;
+    }
+  }
+
+  // 4. Copiar al usuario (pasando p->sz como exige tu versión)
+  if(copyout(p->pagetable, p->sz, maskaddr, (char *)&mask, sizeof(mask)) < 0)
+    return -1;
+
+  return 0;
+}
+
+uint64
+sys_vmprint(void)
+{
+  // Función temporal vacía para que el kernel compile.
+  // Samuel pondrá aquí su lógica en la Parte B.
+  return 0;
+}
