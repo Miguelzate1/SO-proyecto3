@@ -115,36 +115,35 @@ sys_uptime(void)
 uint64
 sys_pgaccess(void)
 {
-  uint64 base;
+  uint64 base, maskaddr;
   int npages;
-  uint64 maskaddr;
   uint64 mask = 0;
   struct proc *p = myproc();
 
-  // 1. Leer argumentos (en tu xv6 devuelven void)
   argaddr(0, &base);
   argint(1, &npages);
   argaddr(2, &maskaddr);
 
-  // 2. Validar rango
-  if(npages < 0 || npages > 64)
+  if (base % PGSIZE != 0)
+    return -1;
+  if (npages < 1 || npages > 64)
+    return -1;
+  // el rango debe quedar dentro del tamaño del proceso
+  if (base >= p->sz || (uint64)npages * PGSIZE > PGROUNDUP(p->sz) - base)
     return -1;
 
-  // 3. Revisar cada página solicitada
-  for(int i = 0; i < npages; i++){
-    uint64 va = base + (uint64)i * PGSIZE;
-    pte_t *pte = walk(p->pagetable, va, 0);
-
-    if(pte != 0 && (*pte & PTE_V) && (*pte & PTE_A)){
-      mask |= (1L << i);
+  for (int i = 0; i < npages; i++) {
+    // alloc=0: nunca se asigna memoria a páginas perezosas
+    pte_t *pte = walk(p->pagetable, base + (uint64)i * PGSIZE, 0);
+    if (pte && (*pte & PTE_V) && (*pte & PTE_A)) {
+      mask |= (uint64)1 << i;
       *pte &= ~PTE_A;
     }
   }
+  sfence_vma(); // que el TLB no conserve el A=1 viejo
 
-  // 4. Copiar al usuario (pasando p->sz como exige tu versión)
-  if(copyout(p->pagetable, p->sz, maskaddr, (char *)&mask, sizeof(mask)) < 0)
+  if (copyout(p->pagetable, p->sz, maskaddr, (char *)&mask, sizeof(mask)) < 0)
     return -1;
-
   return 0;
 }
 

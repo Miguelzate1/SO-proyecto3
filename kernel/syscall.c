@@ -132,8 +132,8 @@ static uint64 (*syscalls[])(void) = {
   [SYS_mkdir]   = sys_mkdir,
   [SYS_close]   = sys_close,
   [SYS_sync]    = sys_sync,
-  [SYS_vmprint]   sys_vmprint,
-[SYS_pgaccess]  sys_pgaccess,
+  [SYS_vmprint] = sys_vmprint,
+  [SYS_pgaccess] = sys_pgaccess,
   // clang-format on
 };
 

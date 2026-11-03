@@ -505,11 +505,8 @@ vmprint_rec(pagetable_t pagetable, int level, uint64 vabase)
     // Cada entrada cubre 2^30 bytes en la raiz, 2^21 en el nivel medio y 2^12 en la hoja.
     uint64 va = vabase + ((uint64)i << (30 - 9 * level));
 
-    for (int j = 0; j <= level; j++) {
-      if (j > 0)
-        printk(" ");
-      printk("..");
-    }
+    for (int j = 0; j <= level; j++)
+      printk(" ..");
     printk("%p: pte %p pa %p\n", (void *)va, (void *)pte, (void *)PTE2PA(pte));
 
     // Sin permisos R/W/X: apunta a otra tabla de paginas, bajar un nivel.

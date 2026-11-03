@@ -137,6 +137,7 @@ found:
     release(&p->lock);
     return 0;
   }
+   memset(p->usyscall, 0, PGSIZE);
   p->usyscall->pid = p->pid;
 
   // An empty user page table.
@@ -164,9 +165,6 @@ freeproc(struct proc *p)
 {
   if (p->trapframe)
     kfree((void *)p->trapframe);
-  p->trapframe = 0;
-  if(p->trapframe)
-    kfree((void*)p->trapframe);
   p->trapframe = 0;
 
   if(p->usyscall)
@@ -263,7 +261,7 @@ growproc(int n)
 
   sz = p->sz;
   if (n > 0) {
-    if (sz + n > TRAPFRAME) {
+    if (sz + n > USYSCALL) {
       return -1;
     }
     if ((sz = uvmalloc(p->pagetable, sz, sz + n, PTE_W)) == 0) {
