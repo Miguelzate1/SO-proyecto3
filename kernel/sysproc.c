@@ -151,7 +151,6 @@ sys_pgaccess(void)
 uint64
 sys_vmprint(void)
 {
-  // Función temporal vacía para que el kernel compile.
-  // Samuel pondrá aquí su lógica en la Parte B.
+  vmprint(myproc()->pagetable);
   return 0;
 }
